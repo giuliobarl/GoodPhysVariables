@@ -13,6 +13,7 @@ import tqdm
 from scipy.optimize import least_squares
 from sklearn.preprocessing import StandardScaler
 from itertools import combinations
+import pickle
 import warnings
 warnings.filterwarnings("ignore", category=DeprecationWarning)
 
@@ -66,7 +67,18 @@ def build_and_compile_model(norm):                                             #
                 optimizer = Adam(0.001))
     return model
 
-es = EarlyStopping(monitor='val_loss', mode='min', verbose=1, patience=200)    # Use early stopping regularization
+# Callbacks
+es = EarlyStopping(monitor = 'val_loss', mode = 'min',
+                   verbose = 1, patience = 50)
+
+checkpoint_filepath = './tmp/checkpoint_newton'
+model_checkpoint_callback = tf.keras.callbacks.ModelCheckpoint(
+    filepath = checkpoint_filepath,
+    save_weights_only = True,
+    monitor = 'val_loss',
+    mode = 'min',
+    save_best_only = True)
+
 model = build_and_compile_model(normalizer)                                    # Build the model
 
 #time
@@ -74,13 +86,22 @@ history = model.fit(
     X_train,
     y_train,
     validation_split=0.15,
-    verbose=2, epochs=500, callbacks=[es])
+    verbose=2, epochs=500,
+    callbacks = [es, model_checkpoint_callback])
 
+with open('NewtonHistoryDict', 'wb') as file_pi:
+    pickle.dump(history.history, file_pi)                                      # Save the model history
+    
+# Load saved weights (best model)
+model.load_weights(checkpoint_filepath)
+model.save('newton_model.tf')                                                  # Save the weights of the best model for later use
+
+
+with open('NewtonHistoryDict', "rb") as file_pi:
+    history = pickle.load(file_pi)
 
 test_predictions = model.predict(X_test).flatten()
 test_labels = y_test.values                                                    # True y over samples of the testing set
-
-model.save('newton_model.tf')                                                  # save model for later use
 
 r2 = r2_score(test_labels, test_predictions)
 mae = mean_absolute_error(test_labels, test_predictions)                       
@@ -112,8 +133,9 @@ ax1.set_ylabel(r"Predicted $\overline{F_{\rm{g}}}$ (N)")
 ax1.text(-0.3, 0.9, 'a', transform=ax1.transAxes, 
             size=12, weight='bold')
 
-ax2.plot(history.history['loss'], label='loss')
-ax2.plot(history.history['val_loss'], label='validation loss')
+ax2.plot(history['loss'], label='loss')
+ax2.plot(history['val_loss'], label='validation loss')
+ax2.set_yscale('log')
 ax2.text(-0.3, 0.9, 'b', transform=ax2.transAxes, 
             size=12, weight='bold')
 
@@ -122,13 +144,14 @@ ax2.set_ylabel('MAE (N)')
 ax2.legend(frameon = False)
 plt.subplots_adjust(wspace=0.4)
 
-plt.savefig('model.svg', bbox_inches='tight')
+plt.savefig('newton_model.svg', bbox_inches='tight')
 
 plt.show()
 
 
+###############################################################################
 #starting feature grouping analysis
-new_model = tf.keras.models.load_model('newton_model.tf')                      # alternatively, load saved model
+model = tf.keras.models.load_model('newton_model.tf')                          # load saved model
 
 other_columns = Data.iloc[:,:-1].columns
 
@@ -198,12 +221,12 @@ for i in tqdm.tqdm(range(len(l))):
                 
                 with tf.GradientTape(persistent=True) as tape:
                     tape.watch(x0)                                                 
-                    preds1 = new_model(x0)                                     # to differentiate the DNN model
+                    preds1 = model(x0)                                         # to differentiate the DNN model
                 dy_dx1 = tape.gradient(preds1, x0)[index_1]                    # evaluate the partial derivative of the model in x0 with respect to the first feature
     
                 with tf.GradientTape(persistent=True) as tape:
                     tape.watch(x0)
-                    preds2 = new_model(x0)
+                    preds2 = model(x0)
                 dy_dx2 = tape.gradient(preds2, x0)[index_2]
     
     
@@ -219,14 +242,14 @@ for i in tqdm.tqdm(range(len(l))):
                 x0 = tf.constant(tx)                                           # create x0
     
                 un = univec(a0, b0)                                            # get un to check for the condition of invariance (components of the gradient aligned with un in x0)
-                DIFF = np.array([np.dot(der, un),
+                DIFF = np.array([np.dot(der, un)[0],
                                  a0**2 + b0**2 - 1], dtype = float)            # evaluate the resiudal
     
                 return(DIFF)
             
             
             x = least_squares(MAIN, beta, method = 'trf', ftol = 2.3e-16, 
-                              verbose = 0, max_nfev = 50)                      # least-squares with Levenberg-Marquardt does not work with rectangular matrices
+                              verbose = 1, max_nfev = 50)                      # least-squares with Levenberg-Marquardt does not work with rectangular matrices
             x.x = x.x/np.linalg.norm(x.x)
             
             a[k] = x.x[0]                                                      # save the results for each of the N iterations
