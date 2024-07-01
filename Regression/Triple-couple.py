@@ -213,13 +213,13 @@ C = np.zeros([len(lista), N])
 D = np.zeros([len(lista), N])
 E = np.zeros([len(lista), N])
 
-for run in tqdm.tqdm(range(len(lista))):
+for i in tqdm.tqdm(range(len(lista))):
     
-    a = 0.6*np.ones(N)                                                         # initial guess for first iteration
-    b = 0.6*np.ones(N)
-    c = -0.6*np.ones(N)
-    d = 0.7*np.ones(N)
-    e = -0.7*np.ones(N)
+    a = 0.5*np.ones(N)                                                         # initial guess for first iteration
+    b = 0.5*np.ones(N)
+    c = -0.5*np.ones(N)
+    d = 0.5*np.ones(N)
+    e = -0.5*np.ones(N)
 
 
     for j in range(repeat):
