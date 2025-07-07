@@ -4,8 +4,8 @@ This repository contains codes related to the publication "Learning _Effective G
 
 ## Table of Contents
 
-- [Classification workflow](#classification)
-- [Regression workflow](#regression)
+- [Classification workflow](#classification-workflow)
+- [Regression workflow](#regression-workflow)
 - [Results](#results)
 
 ## Classification workflow
