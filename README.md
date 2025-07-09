@@ -1,6 +1,6 @@
 # Learning Effective Good Variables from Physical Data
 
-This repository contains codes related to the publication "Learning _Effective Good_ Variables from Physical Data" (https://www.mdpi.com/2504-4990/6/3/77). Datasets and trained models are published on our Zenodo repository https://doi.org/10.5281/zenodo.10406490.
+This repository contains codes related to the publication ["Learning _Effective Good_ Variables from Physical Data"](https://www.mdpi.com/2504-4990/6/3/77). Datasets and trained models are published on our [Zenodo repository](https://doi.org/10.5281/zenodo.10406490).
 
 ## Table of Contents
 
