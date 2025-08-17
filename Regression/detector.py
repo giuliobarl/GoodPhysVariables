@@ -522,7 +522,6 @@ class InvarianceDetector:
         """
         data_df = dataset.df
         results_a, results_b, results_c, results_d = [], [], [], []
-        feature_pairs = list(combinations(dataset.feature_names, 2))
 
         l = list(combinations(dataset.feature_names, 2))
         ll = list(combinations(l, 2))
@@ -583,7 +582,6 @@ class InvarianceDetector:
                         verbose=verbose
                         )
                     
-                    res.x = res.x / np.linalg.norm(res.x)
                     a_vals[k], b_vals[k], c_vals[k], d_vals[k] = res.x
 
             self.A_mat.append(a_vals)
@@ -595,7 +593,6 @@ class InvarianceDetector:
             results_b.append((np.mean(b_vals), np.std(b_vals)))
             results_c.append((np.mean(c_vals), np.std(c_vals)))
             results_d.append((np.mean(d_vals), np.std(d_vals)))
-
 
         # Build DataFrame
         df_results = pd.DataFrame({
