@@ -628,5 +628,16 @@ class InvarianceDetector:
                 plt.legend(bbox_to_anchor=(1.05, 1.0), loc='upper left')
                 plt.ylim(-1, 1)
                 plt.show()
+        elif group == "coupled_pair":
+            for ind in range(len(self.coupled_pairs)):
+                plt.figure(**kwargs)
+                plt.scatter(np.arange(len(self.A_mat[ind])), self.A_mat[ind], label=r'$\alpha$')
+                plt.scatter(np.arange(len(self.B_mat[ind])), self.B_mat[ind], label=r'$\beta$')
+                plt.scatter(np.arange(len(self.C_mat[ind])), self.C_mat[ind], label=r'$\gamma$')
+                plt.scatter(np.arange(len(self.D_mat[ind])), self.D_mat[ind], label=r'$\delta$')                
+                plt.title(self.coupled_pairs[ind])
+                plt.legend(bbox_to_anchor=(1.05, 1.0), loc='upper left')
+                plt.ylim(-1, 1)
+                plt.show()
         else:
-            raise ValueError(f"Group must be one of ['pair', 'triplet'].")
+            raise ValueError(f"Group must be one of ['pair', 'triplet', 'coupled_pairs'].")
